@@ -9,6 +9,7 @@
 
 
 #include "SignalProcessor_VoiceSeekerLight.h"
+#include <string>
 
 using namespace AFEConfig;
 
@@ -405,51 +406,41 @@ namespace SignalProcessor {
 
 	//Private section
 	void SignalProcessor_VoiceSeekerLight::setDefaultSettings() {
-		this->_sampleRate = 16000;
+		this->_sampleRate = SAMPLE_RATE;
 		this->_sampleFormat = SND_PCM_FORMAT_S32_LE; //Number should correspond to ALSA formats
-		this->_periodSize = 800;
-		this->_inputChannelsCount = 4; //Number of mic channels
-		this->_referenceChannelsCount = 2; //Number of reference channels (speakers)
+		this->_periodSize = PERIOD_SIZE;
+		this->_inputChannelsCount = MIC_CHANNELS; //Number of mic channels
+		this->_referenceChannelsCount = SPEAKER_CHANNELS; //Number of reference channels (speakers)
 		this->_channel2output =	0; //By default use first channel as output
 		this->_sampleSize = snd_pcm_format_size(this->_sampleFormat, 1); //Derive sample size from sample format
 
 		AFEConfigState configState;
+		
+		machine_info = getMachineInfo();
+		std::cout << "Debug: Machine: " << machine_info << std::endl;
+		if( machine_info == MACHINE_IMX8M 	 	|| 
+			machine_info == MACHINE_IMX93QSB  	||
+			machine_info == MACHINE_IMX93EVK11	 )
+		{
+			std::cout << "Info: Detected i.MX device " << machine_info << "; setting microphone coordinates..."<< std::endl;
+			
+		}
+		else
+		{
+			machine_info = MACHINE_UNKNOWN;
+			std::cout << "Warning: No mic coordinates avialable for i.MX EVK used. Setting coordinates to zero." << std::endl;
+		}
+		
+		// Set mic coordinates for supported i.MX EVKs. 
+		for(uint8_t mic_id = 0; mic_id < this->_inputChannelsCount ; mic_id++)
+		{
+			this->mic[mic_id] =  configState.isConfigurationEnable("mic" + to_string(mic_id), array_4mic_coordinates[machine_info][mic_id]);
+		}
+
 		this->_WWDetection = (configState.isConfigurationEnable("WWDectionDisable", 0) == 1)? false : true;
 		this->delaySamples = configState.isConfigurationEnable("RefSignalDelay", delaySamples);
 		this->debugEnable = (configState.isConfigurationEnable("DebugEnable", 0) == 1)? true : false;
-		/*
-			mic0 = 35.0, 15.15, 0.0
-			mic1 = 17.5, -15.15, 0.0
-			mic2 = -17.5, -15.15, 0.0
-			mic3 = -35.0, 15.15, 0.0
-		*/
-		mic_xyz micDefaultState[4] = {{35.0, 15.15, 0.0}, {17.5, -15.15, 0.0}, {-17.5, -15.15, 0.0}, {-35.0, 15.15, 0.0}};
-		machine_info = getMachineInfo();
-		switch (machine_info) {
-		case MACHINE_IMX8M:
-			this->mic[0] = micDefaultState[0];
-			this->mic[1] = micDefaultState[1];
-			this->mic[2] = micDefaultState[2];
-			this->mic[3] = micDefaultState[3];
-			break;
-		case MACHINE_IMX93EVK11:
-			this->mic[0] = {59.5, -48.0, 0.0};
-			this->mic[1] = {-59.5, -52.5, 0.0};
-			this->mic[2] = {59.5, 48.0, 0.0};
-			this->mic[3] = {-59.5, 52.5, 0.0};
-			break;
-		case MACHINE_IMX93QSB:
-			this->mic[0] = {36.0, -36.0, 0};
-			this->mic[1] = {-36.0, -36.0, 0};
-			this->mic[2] = {36.0, 36.0, 0};
-			this->mic[3] = {-36.0, 36, 0};
-			break;
-		default:
-			this->mic[0] = configState.isConfigurationEnable("mic0", micDefaultState[0]);
-			this->mic[1] = configState.isConfigurationEnable("mic1", micDefaultState[1]);
-			this->mic[2] = configState.isConfigurationEnable("mic2", micDefaultState[2]);
-			this->mic[3] = configState.isConfigurationEnable("mic3", micDefaultState[3]);
-		}
+		
 		for (int i = 0; i < 4; i++)
 		{
 			std::cout << "mic" << i << " xyz: (" << mic[i].x << ", " << mic[i].y << ", " << mic[i].z << ")" << std::endl;

@@ -43,6 +43,17 @@
 #define RDSP_BUFFER_LENGTH_SEC 1.5f
 #define RDSP_AEC_FILTER_LENGTH_MS 150 // TODO: can AEC filter length be reduced?
 #define RDSP_DISABLE_TRIGGER_TIMEOUT_SEC 1
+#define SAMPLE_RATE 16000
+#define PERIOD_SIZE 800
+#define MIC_CHANNELS 4
+#define SPEAKER_CHANNELS 2
+
+//Update this array if you need to add support for a new EVK. Or have different mic coordinates
+AFEConfig::mic_xyz array_4mic_coordinates[4][4] ={
+{{ 0.0,   0.0 , 0.0},{   0.0,   0.0 , 0.0},{  0.0,   0.0,  0.0},{  0.0, 0.0 ,  0.0}},  //Unknown
+{{35.0,  15.15, 0.0},{  17.5, -15.15, 0.0},{-17.5, -15.15, 0.0},{-35.0, 15.15, 0.0}},  // i.MX 8MP EVK
+{{59.5, -48.0 , 0.0},{ -59.5, -52.5 , 0.0},{ 59.5,  48.0,  0.0},{-59.5, 52.5 , 0.0}},  // i.MX 93 11 x 11 EVK
+{{36.0, -36.0 , 0.0},{ -36.0, -36.0 , 0.0},{ 36.0,  36.0,  0.0},{-36.0, 36.0 , 0.0}}}; // i.MX 93 (QSB) EVK
 
 #define VOICESEEKER_OUT_NHOP 200
 
@@ -59,7 +70,7 @@
 
 namespace SignalProcessor {
 	typedef enum {
-		MACHINE_UNKNOWN = -1,
+		MACHINE_UNKNOWN = 0,
 		MACHINE_IMX8M,
 		MACHINE_IMX93EVK11,
 		MACHINE_IMX93QSB,
