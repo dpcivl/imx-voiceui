@@ -22,8 +22,8 @@ VS_DIR1 = $(VSPOT)/lib/include
 VIT_DIR1 = ../vit/src
 
 INC_DIR1 = $(VSEEKER)/include
-INC_DIR2 = $(VSEEKER)/rdsp_utilities_public/include
-INC_DIR3 = $(VSEEKER)/rdsp_utilities_public/rdsp_memory_utils_public
+INC_DIR2 = $(VSPOT)/rdsp_utilities_public/include
+INC_DIR3 = $(VSPOT)/rdsp_utilities_public/rdsp_memory_utils_public
 
 CPPFLAGS += -O3 -DNDEBUG -DRDSP_DISABLE_FILEIO -Wno-format-security
 LIBRARY = 	$(VSPOT)/lib/libvoicespot.a  \
