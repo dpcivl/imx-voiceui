@@ -182,6 +182,8 @@ namespace SignalProcessor {
 		VITInstParams.DeviceId = VIT_IMX9XA55;
 #elif defined CortexA53
 		VITInstParams.DeviceId = VIT_IMX8MA53;
+#elif defined CortexA35
+		VITInstParams.DeviceId = VIT_IMX8ULPA35;
 #else
 		VITInstParams.DeviceId = VIT_IMX8MA53;
 #endif

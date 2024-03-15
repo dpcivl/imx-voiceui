@@ -6,9 +6,16 @@ ifeq ($(BUILD_ARCH),CortexA55)
 else
 	BUILD_ARCH = CortexA53
 	VSPOT = ./platforms/iMX8M_CortexA53
+	VSEEKER = ../voiceseeker/platforms/iMX8M_CortexA53
+
+ifeq ($(BUILD_ARCH),CortexA35)
+	VIT_PATH = ../vit/platforms/iMX8_CortexA35
+	VIT_LIB = ../vit/platforms/iMX8_CortexA35/lib/libVIT_iMX8_CortexA35_v04_09_00.a
+else
 	VIT_PATH = ../vit/platforms/iMX8M_CortexA53
 	VIT_LIB = ../vit/platforms/iMX8M_CortexA53/lib/libVIT_iMX8M_CortexA53_v04_09_00.a
-	VSEEKER = ../voiceseeker/platforms/iMX8M_CortexA53
+endif
+
 endif
 
 BUILD_DIR = ./build/$(BUILD_ARCH)
