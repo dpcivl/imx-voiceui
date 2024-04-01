@@ -39,7 +39,7 @@ void rdsp_import_voicespot_model(const char* Afilename, uint8_t** Amodel, uint32
 	fseek(file, 0, SEEK_SET);
 
 	//Allocate memory
-	*Amodel = (uint8_t*)rdsp_malloc(fileLen + 1 + 16);
+	*Amodel = (uint8_t*)malloc(fileLen + 1 + 16);
 	if (!*Amodel) {
 		fprintf(stderr, "Memory error!");
 		fclose(file);
@@ -54,6 +54,7 @@ void rdsp_import_voicespot_model(const char* Afilename, uint8_t** Amodel, uint32
 	*Amodel_size = fileLen;
 }
 
+#if RDSP_ENABLE_VOICESPOT
 int32_t rdsp_set_voicespot_params(rdsp_voicespot_control* Avoicespot_control, int32_t Avoicespot_handle, const char* Avoicespot_params) {
 	// Set up parameters using a parameter blob
 	if (Avoicespot_params != NULL) {
@@ -76,6 +77,7 @@ int32_t rdsp_set_voicespot_params(rdsp_voicespot_control* Avoicespot_control, in
 	}
 	return -1;
 }
+#endif
 
 /*
  * Performance log file

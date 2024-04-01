@@ -9,7 +9,7 @@ INSTALLDIR := ./release
 BUILD_ARCH ?= CortexA53
 export BUILD_ARCH
 
-all: VOICESEEKER VOICESPOT
+all: VOICESEEKER VOICE_UI_APP
 
 VOICESEEKER: | $(INSTALLDIR)
 	@echo "--- Build voiceseeker library ---"
@@ -17,12 +17,10 @@ VOICESEEKER: | $(INSTALLDIR)
 	cp ./voiceseeker/build/$(BUILD_ARCH)/libvoiceseekerlight.so $(INSTALLDIR)/libvoiceseekerlight.so.2.0
 	cp ./voiceseeker/src/Config.ini $(INSTALLDIR)/
 
-VOICESPOT: | $(INSTALLDIR)
-	@echo "--- Build voicespot app ---"
-	make -C ./voicespot
-	cp ./voicespot/build/$(BUILD_ARCH)/voice_ui_app $(INSTALLDIR)/
-	cp ./voicespot/platforms/models/NXP/HeyNXP_en-US_1.bin $(INSTALLDIR)/
-	cp ./voicespot/platforms/models/NXP/HeyNXP_1_params.bin $(INSTALLDIR)/
+VOICE_UI_APP: | $(INSTALLDIR)
+	@echo "--- Build voice ui app ---"
+	make -C ./voice_ui_app
+	cp ./voice_ui_app/build/$(BUILD_ARCH)/voice_ui_app $(INSTALLDIR)/
 
 $(INSTALLDIR) :
 	mkdir $@
@@ -30,5 +28,5 @@ $(INSTALLDIR) :
 clean:
 	rm -rf ./release
 	make -C ./voiceseeker clean
-	make -C ./voicespot clean
+	make -C ./voice_ui_app clean
 

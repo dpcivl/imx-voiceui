@@ -14,8 +14,12 @@
 #ifndef RDSP_VOICESEEKERLIGHT_APP_UTILITIES_H
 #define RDSP_VOICESEEKERLIGHT_APP_UTILITIES_H
 
+#define RDSP_ENABLE_VOICESPOT 0
+
 #include "libVoiceSeekerLight.h"
+#if RDSP_ENABLE_VOICESPOT
 #include "public/rdsp_voicespot.h"
+#endif
 #include <stdio.h>
 
 
@@ -28,7 +32,9 @@ extern "C" {
 	 */
 
 	void rdsp_import_voicespot_model(const char* Afilename, uint8_t** Amodel, uint32_t* Amodel_size);
+#if RDSP_ENABLE_VOICESPOT
 	int32_t rdsp_set_voicespot_params(rdsp_voicespot_control* Avoicespot_control, int32_t Avoicespot_handle, const char* Avoicespot_params);
+#endif
 
 	/*
 	 * Performance log file

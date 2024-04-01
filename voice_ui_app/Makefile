@@ -1,23 +1,24 @@
 ifeq ($(BUILD_ARCH),CortexA55)
-	VSPOT = ./platforms/iMX9_CortexA55
 	VIT_PATH = ../vit/platforms/iMX9_CortexA55
 	VIT_LIB = ../vit/platforms/iMX9_CortexA55/lib/libVIT_iMX9_CortexA55_v04_10_00_EngineeringRelease.a
 	VSEEKER = ../voiceseeker/platforms/iMX9_CortexA55
 else
-	BUILD_ARCH = CortexA53
-	VSPOT = ./platforms/iMX8M_CortexA53
 	VSEEKER = ../voiceseeker/platforms/iMX8M_CortexA53
 
 ifeq ($(BUILD_ARCH),CortexA35)
+	BUILD_ARCH = CortexA35
 	VIT_PATH = ../vit/platforms/iMX8_CortexA35
 	VIT_LIB = ../vit/platforms/iMX8_CortexA35/lib/libVIT_iMX8_CortexA35_v04_09_00.a
 else
+	BUILD_ARCH = CortexA53
 	VIT_PATH = ../vit/platforms/iMX8M_CortexA53
 	VIT_LIB = ../vit/platforms/iMX8M_CortexA53/lib/libVIT_iMX8M_CortexA53_v04_09_00.a
 endif
 
 endif
 
+VSPOT = ../voiceprocessor/
+VSUI  = ./
 BUILD_DIR = ./build/$(BUILD_ARCH)
 
 NE10_DIR = ../utils/ne10
@@ -25,26 +26,24 @@ RDSP_DIR = ../utils/rdsp_common_utils
 AFE_DIR = ../utils/afe_config
 AST_DIR = ../utils/audiostream
 
-VS_DIR1 = $(VSPOT)/lib/include
+VS_DIR1 = $(VSPOT)
 VIT_DIR1 = ../vit/src
 
 INC_DIR1 = $(VSEEKER)/include
-INC_DIR2 = $(VSPOT)/rdsp_utilities_public/include
-INC_DIR3 = $(VSPOT)/rdsp_utilities_public/rdsp_memory_utils_public
+INC_DIR2 = $(VSEEKER)/rdsp_utilities_public/include
+INC_DIR3 = $(VSEEKER)/rdsp_utilities_public/rdsp_memory_utils_public
 
 CPPFLAGS += -O3 -DNDEBUG -DRDSP_DISABLE_FILEIO -Wno-format-security
-LIBRARY = 	$(VSPOT)/lib/libvoicespot.a  \
-			$(VIT_LIB) $(NE10_DIR)/lib/libNE10.a
+LIBRARY = $(VIT_LIB) $(NE10_DIR)/lib/libNE10.a
 
-INCLUDES = $(addprefix -I, ./src $(VS_DIR1) 		\
+INCLUDES = $(addprefix -I, ./src $(VS_DIR1) $(VSUI)		\
 		$(VIT_PATH)/lib $(VIT_PATH)/lib/inc 		\
 		$(AFE_DIR) $(NE10_DIR)/include				\
 		$(RDSP_DIR)/src $(AST_DIR) $(VIT_DIR1)		\
 		$(INC_DIR1) $(INC_DIR2) $(INC_DIR3))
 
-SRCS = 	./voice_ui_app.cpp							\
-	   	./src/SignalProcessor_VoiceSpot.cpp 		\
-	   	./src/SignalProcessor_NotifyTrigger.cpp		\
+SRCS = 	./voice_ui_app.cpp				\
+	./SignalProcessor_NotifyTrigger.cpp		\
 	   	$(VIT_DIR1)/SignalProcessor_VIT.cpp			\
 		$(AFE_DIR)/AFEConfigState.cpp 				\
 		$(RDSP_DIR)/src/RdspAppUtilities.cpp 		\

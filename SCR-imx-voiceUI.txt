@@ -30,14 +30,6 @@ Origin:             NXP (proprietary)
                     https://github.com/projectNe10/Ne10 (BSD 3-Clause)
                     https://github.com/zeux/pugixml (MIT)
 
-Component:          voicespot_release
-Outgoing License:   LA_OPT_NXP_Software_License v56 April 2024 - No distribution granted - Section 2.2 applies
-Type of Content:    Precompiled libraries, header files
-Description:        Wake-word detection for voice UI
-Origin:             NXP (proprietary)
-                    https://github.com/ARM-software/ComputeLibrary (MIT)
-                    https://github.com/projectNe10/Ne10 (BSD 3-Clause)
-
 Component:          VIT
 Outgoing License:   LA_OPT_NXP_Software_License v56 April 2024 - No distribution granted - Section 2.2 applies
 Type of Content:    Precompiled libraries, header files

@@ -5,16 +5,29 @@
 
 #include <cstring>
 #include <AudioStream.h>
+#include <dlfcn.h>
 
 #include "RdspAppUtilities.h"
-#include "SignalProcessor_VoiceSpot.h"
+#include "VoiceProcessorImplementation.h"
 #include "SignalProcessor_VIT.h"
 #include "RdspBuffer.h"
+
+#define VOICESEEKER_OUT_NHOP 200
+#define VSLOUTBUFFERSIZE (VOICESEEKER_OUT_NHOP * sizeof(float))
 
 std::string commandUsageStr =
     "Invalid input arguments!\n" \
     "Refer to the following command:\n" \
     "./voicespot <-notify>\n";
+
+#define CHECK(x) \
+        do { \
+                if (!(x)) { \
+                        fprintf(stderr, "%s:%d: ", __func__, __LINE__); \
+                        perror(#x); \
+                        exit(-1); \
+                } \
+        } while (0) \
 
 using namespace SignalProcessor;
 using namespace AudioStreamWrapper;
@@ -25,6 +38,9 @@ static snd_pcm_format_t format = SND_PCM_FORMAT_S32_LE;
 static int period_size = 128;
 static int buffer_size = period_size * 4;
 static int rate = 16000;
+
+typedef void * (*creator)(void);
+typedef void * (*destructor)(SignalProcessor::VoiceProcessorImplementation * impl);
 
 //Define structure for circular buffer
 typedef struct {
@@ -151,6 +167,8 @@ int main(int argc, char *argv[]) {
 	bool wakewordnotify = false;
 	bool micSamplesReady = false;
 	bool voice_ww_detect = false;
+	std::string libraryDir = "/usr/lib/nxp-afe/";
+	std::string libraryName = libraryDir + "libvoicespot.so";
 
 	struct streamSettings captureOutputSettings =
 	{
@@ -181,6 +199,16 @@ int main(int argc, char *argv[]) {
 	int vit_frame_count = 3 * 80;  /* 3 seconds*/
 	rdsp_buffer vit_frame_buf;
 	VIT_Handle_t VITHandle = PL_NULL;
+	char *message;
+	void *library;
+	VoiceProcessorImplementation *impl;
+	creator createFce;
+	destructor destroyFce;
+	struct mq_attr attr;
+	mqd_t mqVslOut;
+	mqd_t mqIter;
+	mqd_t mqTrigg;
+	mqd_t mqOffset;
 
 	initQueue(&seekeroutput, 0, queue_size);
 
@@ -196,21 +224,55 @@ int main(int argc, char *argv[]) {
 	RdspBuffer_Create(&vit_frame_buf, 1, sizeof(int16_t), 6 * VOICESEEKER_OUT_NHOP);
 	vit_frame_buf.assume_full = 0;
 
-	SignalProcessor_VoiceSpot VoiceSpot{};
 	SignalProcessor_VIT VIT{};
 	VITHandle = VIT.VIT_open_model();
 	VIT.VIT_Handle = VITHandle;
+
+	if (!VIT.isVITWakeWordEnable()) {
+		library = dlopen(libraryName.c_str(), RTLD_NOW);
+		message = dlerror();
+		if (nullptr != message) {
+			std::cout << "Opening library failed: " << message << std::endl;
+			exit(1);
+		}
+
+		createFce = (void * (*)())dlsym(library, "createProcessor");
+		message = dlerror();
+		if (nullptr != message) {
+			std::cout << "createProcessor load: " << message << std::endl;
+			exit(1);
+		}
+		destroyFce = (void *(*)(SignalProcessor::VoiceProcessorImplementation * impl))dlsym(library, "destroyProcessor");
+		message = dlerror();
+		if (nullptr != message) {
+			std::cout << "destroyProcessor load: " << message << std::endl;
+			exit(1);
+		}
+
+		impl = (SignalProcessor::VoiceProcessorImplementation *) createFce();
+		if (impl == NULL) {
+			exit(1);
+		}
+	}
+
+	//initialize the queue attributes
+	attr.mq_flags = 0;
+	attr.mq_maxmsg = 10;
+	attr.mq_msgsize = VSLOUTBUFFERSIZE;
+	attr.mq_curmsgs = 0;
+
+	//create the message queue
+	mqVslOut = mq_open("/voicespot_vslout", O_CREAT | O_RDONLY, 0644, &attr);
+	attr.mq_msgsize = sizeof(int32_t);
+	mqIter = mq_open("/voiceseeker_iterations", O_CREAT | O_RDONLY, 0644, &attr);
+	mqTrigg = mq_open("/voiceseeker_trigger", O_CREAT | O_RDONLY, 0644, &attr);
+	mqOffset = mq_open("/voicespot_offset", O_CREAT | O_WRONLY, 0644, &attr);
 
 	AudioStream captureOutput;
 	captureOutput.open(captureOutputSettings);
 	captureOutput.start();
 
 	while (true) {
-		mqd_t mqVslOut = VoiceSpot.get_mqVslout();
-		mqd_t mqIter = VoiceSpot.get_mqIter();
-		mqd_t mqTrigg = VoiceSpot.get_mqTrigg();
-		mqd_t mqOffset = VoiceSpot.get_mqOffset();
-
 		while (tmp_pos < VOICESEEKER_OUT_NHOP) {
 			if (capture_pos == period_size) {
 				err = captureOutput.readFrames(captureBuffer, period_size * captureOutputChannels * sampleSize);
@@ -268,13 +330,16 @@ int main(int argc, char *argv[]) {
 		keyword_start_offset_samples = 0;
 		if (VIT.isVITWakeWordEnable()) {
 			if (VIT.isVoiceSpotEnable()) {
-				printf("Disable voicespot if using VIT wakeword detection\n");
+				std::cout << "Disable voicespot if using VIT wakeword detection" << std::endl;
 				break;
 			}
-			bool VIT_Result = VoiceSpotToVITProcess(VIT, buffer, &vit_frame_buf, vit_frame_size, &keyword_start_offset_samples, wakewordnotify, iterations);
+			bool VIT_Result = VoiceSpotToVITProcess(VIT, buffer,
+								&vit_frame_buf, vit_frame_size,
+								&keyword_start_offset_samples,
+								wakewordnotify, iterations);
 		}
 		else if (!voice_ww_detect) {
-			keyword_start_offset_samples = VoiceSpot.voiceSpot_process(buffer, wakewordnotify, iterations, enable_triggering);
+			keyword_start_offset_samples = impl->processSignal(buffer, wakewordnotify, iterations, enable_triggering);
 			if (keyword_start_offset_samples){
 				voice_ww_detect = true;
 				vit_frame_count = 3* 80;
@@ -285,11 +350,25 @@ int main(int argc, char *argv[]) {
 		CHECK(0 <= mq_send(mqOffset, (char*)&keyword_start_offset_samples, sizeof(int32_t), 0));
 
 		if (voice_ww_detect) {
-			voice_ww_detect = !VoiceSpotToVITProcess(VIT, buffer, &vit_frame_buf, vit_frame_size, &keyword_start_offset_samples, wakewordnotify, iterations);
+			voice_ww_detect = !VoiceSpotToVITProcess(VIT, buffer,
+								 &vit_frame_buf, vit_frame_size,
+								 &keyword_start_offset_samples,
+								 wakewordnotify, iterations);
 			vit_frame_count--;
 			if (!vit_frame_count)
 				voice_ww_detect = false;
 		}
+	}
+
+	mq_close(mqVslOut);
+	mq_close(mqIter);
+	mq_close(mqTrigg);
+	mq_close(mqOffset);
+
+	if (!VIT.isVITWakeWordEnable())	{
+		impl->closeProcessor();
+		destroyFce(impl);
+		dlclose(library);
 	}
 
 	/* Close VIT model */
