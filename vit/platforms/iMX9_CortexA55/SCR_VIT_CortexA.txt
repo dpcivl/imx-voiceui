@@ -5,14 +5,14 @@ Description: Cortex-A55 Voice Intelligent Technology library : : VIT Wakeword an
 Version: 4.10.0
 
 #### VIT package #######
-Outgoing License : LA_OPT_NXP_Software_License v56 April 2024 - No distribution granted - Section 2.2 applies
+Outgoing License:  LA_OPT_NXP_Software_License v56 April 2024 - Additional distribution license granted - Section 2.3 applies
 License file : LICENSE.txt
 Author: NXP - VATEC
 Format: VIT package
 
 
 #### Package content #######
-Outgoing License : LA_OPT_NXP_Software_License v56 April 2024 - No distribution granted - Section 2.2 applies
+Outgoing License:  LA_OPT_NXP_Software_License v56 April 2024 - Additional distribution license granted - Section 2.3 applies
 License file : LICENSE.txt
 Author: NXP - VATEC
 Format: Precompiled libraries
