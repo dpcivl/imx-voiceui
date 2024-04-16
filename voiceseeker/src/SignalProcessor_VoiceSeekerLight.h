@@ -53,11 +53,13 @@
 #define SPEAKER_CHANNELS 2
 
 //Update this array if you need to add support for a new EVK. Or have different mic coordinates
-AFEConfig::mic_xyz array_4mic_coordinates[4][4] ={
+AFEConfig::mic_xyz array_4mic_coordinates[5][4] ={
 {{ 0.0,   0.0 , 0.0},{   0.0,   0.0 , 0.0},{  0.0,   0.0,  0.0},{  0.0, 0.0 ,  0.0}},  //Unknown
 {{35.0,  15.15, 0.0},{  17.5, -15.15, 0.0},{-17.5, -15.15, 0.0},{-35.0, 15.15, 0.0}},  // i.MX 8MP EVK
 {{59.5, -48.0 , 0.0},{ -59.5, -52.5 , 0.0},{ 59.5,  48.0,  0.0},{-59.5, 52.5 , 0.0}},  // i.MX 93 11 x 11 EVK
-{{36.0, -36.0 , 0.0},{ -36.0, -36.0 , 0.0},{ 36.0,  36.0,  0.0},{-36.0, 36.0 , 0.0}}}; // i.MX 93 (QSB) EVK
+{{36.0, -36.0 , 0.0},{ -36.0, -36.0 , 0.0},{ 36.0,  36.0,  0.0},{-36.0, 36.0 , 0.0}},  // i.MX 93 (QSB) EVK
+{{32.5, -32.5 , 0.0},{ -32.5,  32.5 , 0.0},{  0.0,   0.0,  0.0},{  0.0, 0.0 ,  0.0}}   // i.MX 95 19 x 19 EVK
+};
 
 #define VOICESEEKER_OUT_NHOP 200
 
@@ -78,6 +80,7 @@ namespace SignalProcessor {
 		MACHINE_IMX8M,
 		MACHINE_IMX93EVK11,
 		MACHINE_IMX93QSB,
+		MACHINE_IMX95EVK19
 	} MachineInfo;
 
 	class SignalProcessor_VoiceSeekerLight : public SignalProcessor::SignalProcessorImplementation {
@@ -144,6 +147,7 @@ namespace SignalProcessor {
 		MachineInfo machine_info;
 
 		void setDefaultSettings(); //Sets the signal processors settings to default values.
+		void setConfigSettings(); //Sets to Config.ini values.
 
 		//Functions for delay buffer
 		void initQueue(queue* q, size_t samples_delay, size_t maxSize);
@@ -176,7 +180,6 @@ namespace SignalProcessor {
 		const char* getSampleFormat() const override;
 
 		uint32_t getVersionNumber() const override;
-		MachineInfo getMachineInfo();
 	};
 
 }

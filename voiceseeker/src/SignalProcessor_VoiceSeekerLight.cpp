@@ -47,6 +47,36 @@ namespace SignalProcessor {
 		printf("VoiceSeekerLight App v%i.%i.%i\n", RDSP_VOICESEEKER_LIGHT_APP_VERSION_MAJOR, RDSP_VOICESEEKER_LIGHT_APP_VERSION_MINOR, RDSP_VOICESEEKER_LIGHT_APP_VERSION_PATCH);
 
 		setDefaultSettings(); //Initialize the _signalProcessorSettings to default values
+	}
+
+	int32_t SignalProcessor_VoiceSeekerLight::openProcessor(const std::unordered_map<std::string, std::string>* settings) {
+
+		if (VoiceSeekerLightSignalProcessorState::closed != this->_state) {
+			std::cout << "Instance is already opened! It needs to be closed first." << std::endl;
+			return -1;
+		}
+
+		// Overwrite default settings in case the user provided his own configuration
+		if (nullptr != settings) {
+			std::string format = settings->at("sample_format");
+			snd_pcm_format_t formatValue = snd_pcm_format_value(format.c_str());
+			if (SND_PCM_FORMAT_UNKNOWN != formatValue) {
+				this->_sampleFormat = formatValue;
+				/* Get the size of bytes for one sample for given format */
+				this->_sampleSize = snd_pcm_format_size(this->_sampleFormat, 1);
+			}
+			else {
+				closeProcessor();
+				throw; /* TODO throw some meaningful exception */
+			}
+
+			this->_channel2output = stoi(settings->at("channel2output"));
+			this->_inputChannelsCount = stoi(settings->at("input_channels"));
+			this->_periodSize = stoi(settings->at("period_size"));
+			this->machine_info = (MachineInfo)stoi(settings->at("machine_info"));
+		}
+
+		setConfigSettings();
 
 		/*
 		 * VoiceSeekerLight plugin configuration
@@ -70,7 +100,7 @@ namespace SignalProcessor {
 		vsl_config.mic_xyz_mm = (rdsp_xyz_t*)malloc(sizeof(rdsp_xyz_t) * vsl_config.num_mics);
 		if (vsl_config.mic_xyz_mm == NULL) {
 			printf("VoiceSeekerLight_Create: failed to allocate for mic geometry mem\n");
-			return;
+			return -1;
 		}
 
 		// mic0 xyz
@@ -103,13 +133,13 @@ namespace SignalProcessor {
 		void* heap_memory = malloc(heap_req_bytes);
 		if (heap_memory == NULL) {
 			printf("VoiceSeekerLight_Create: failed to allocate for heap_memory\n");
-			return;
+			return -1;
 		}
 
 		void* scratch_memory = malloc(scratch_size);
 		if (scratch_memory == NULL) {
 			printf("VoiceSeekerLight_Create: failed to allocate for scratch_memory\n");
-			return;
+			return -1;
 		}
 
 		vsl.mem.pPrivateDataBase = heap_memory;
@@ -123,10 +153,10 @@ namespace SignalProcessor {
 		RdspStatus voiceseeker_status = VoiceSeekerLight_Create(&vsl, &vsl_config);
 		if (voiceseeker_status != OK) {
 			printf("VoiceSeekerLight_Create: voiceseeker_status = %d\n", voiceseeker_status);
-            throw -1;
+			throw -1;
 		}
 
-		VoiceSeekerLight_Init(&vsl);					//VoiceSeekerLight initialization
+		VoiceSeekerLight_Init(&vsl);			//VoiceSeekerLight initialization
 		VoiceSeekerLight_GetConfig(&vsl, &vsl_config);	//Retrieve VoiceSeekerLight configuration
 
 		VoiceSeekerLight_GetConstants(&vsl_constants);
@@ -165,36 +195,6 @@ namespace SignalProcessor {
 
 		if(this->debugEnable)
 			std::cout << "->SAVING AUDIO FILES FOR DELAY DEBUG ACTIVATED<-" << std::endl;
-	}
-
-	int32_t SignalProcessor_VoiceSeekerLight::openProcessor(const std::unordered_map<std::string, std::string>* settings) {
-
-		if (VoiceSeekerLightSignalProcessorState::closed != this->_state) {
-			std::cout << "Instance is already opened! It needs to be closed first." << std::endl;
-			return -1;
-		}
-
-		// Overwrite default settings in case the user provided his own configuration
-		if (nullptr != settings) {
-			std::string format = settings->at("sample_format");
-			snd_pcm_format_t formatValue = snd_pcm_format_value(format.c_str());
-			if (SND_PCM_FORMAT_UNKNOWN != formatValue) {
-				this->_sampleFormat = formatValue;
-				/* Get the size of bytes for one sample for given format */
-				this->_sampleSize = snd_pcm_format_size(this->_sampleFormat, 1);
-			}
-			else {
-				closeProcessor();
-				throw; /* TODO throw some meaningful exception */
-			}
-
-			this->_channel2output = stoi(settings->at("channel2output"));
-			this->_inputChannelsCount = stoi(settings->at("input_channels"));
-			this->_periodSize = stoi(settings->at("period_size"));
-
-			vsl_config.num_mics = this->_inputChannelsCount;
-			VoiceSeekerLight_GetConfig(&vsl, &vsl_config);	//Retrieve VoiceSeekerLight configuration
-		}
 
 		/*
 		 * We can check the validity of settings here
@@ -417,25 +417,29 @@ namespace SignalProcessor {
 		this->_referenceChannelsCount = SPEAKER_CHANNELS; //Number of reference channels (speakers)
 		this->_channel2output =	0; //By default use first channel as output
 		this->_sampleSize = snd_pcm_format_size(this->_sampleFormat, 1); //Derive sample size from sample format
+		this->machine_info = MACHINE_UNKNOWN;
+	}
 
+	// Settings retrieve from Config.in
+	void SignalProcessor_VoiceSeekerLight::setConfigSettings() {
 		AFEConfigState configState;
-		
-		machine_info = getMachineInfo();
+
 		std::cout << "Debug: Machine: " << machine_info << std::endl;
-		if( machine_info == MACHINE_IMX8M 	 	|| 
+		if( machine_info == MACHINE_IMX8M 	 	||
 			machine_info == MACHINE_IMX93QSB  	||
-			machine_info == MACHINE_IMX93EVK11	 )
+			machine_info == MACHINE_IMX93EVK11	||
+			machine_info == MACHINE_IMX95EVK19)
 		{
 			std::cout << "Info: Detected i.MX device " << machine_info << "; setting microphone coordinates..."<< std::endl;
-			
+
 		}
 		else
 		{
 			machine_info = MACHINE_UNKNOWN;
 			std::cout << "Warning: No mic coordinates avialable for i.MX EVK used. Setting coordinates to zero." << std::endl;
 		}
-		
-		// Set mic coordinates for supported i.MX EVKs. 
+
+		// Set mic coordinates for supported i.MX EVKs.
 		for(uint8_t mic_id = 0; mic_id < this->_inputChannelsCount ; mic_id++)
 		{
 			this->mic[mic_id] =  configState.isConfigurationEnable("mic" + to_string(mic_id), array_4mic_coordinates[machine_info][mic_id]);
@@ -444,7 +448,7 @@ namespace SignalProcessor {
 		this->_WWDetection = (configState.isConfigurationEnable("WWDectionDisable", 0) == 1)? false : true;
 		this->delaySamples = configState.isConfigurationEnable("RefSignalDelay", delaySamples);
 		this->debugEnable = (configState.isConfigurationEnable("DebugEnable", 0) == 1)? true : false;
-		
+
 		for (int i = 0; i < 4; i++)
 		{
 			std::cout << "mic" << i << " xyz: (" << mic[i].x << ", " << mic[i].y << ", " << mic[i].z << ")" << std::endl;
@@ -556,26 +560,6 @@ namespace SignalProcessor {
 		mq_close(mq);
 
 		return offset;
-	}
-
-	MachineInfo SignalProcessor_VoiceSeekerLight::getMachineInfo() {
-		MachineInfo machine = MACHINE_UNKNOWN;
-		char buf[64] = {0};
-		FILE* fileptr;
-
-		fileptr = fopen("/sys/devices/soc0/machine", "rb");
-		if (fileptr == NULL)
-			return MACHINE_UNKNOWN;
-		else if (fread(buf, sizeof(char), sizeof(buf), fileptr)) {
-			if (strstr(buf, "i.MX8M"))
-				machine = MACHINE_IMX8M;
-			else if (strstr(buf, "i.MX93 11"))
-				machine = MACHINE_IMX93EVK11;
-			else if (strstr(buf, "i.MX93 9"))
-				machine = MACHINE_IMX93QSB;
-		}
-		fclose(fileptr);
-		return machine;
 	}
 }
 
