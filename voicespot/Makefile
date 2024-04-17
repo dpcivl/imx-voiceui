@@ -1,7 +1,7 @@
 ifeq ($(BUILD_ARCH),CortexA55)
 	VSPOT = ./platforms/iMX9_CortexA55
 	VIT_PATH = ../vit/platforms/iMX9_CortexA55
-	VIT_LIB = ../vit/platforms/iMX9_CortexA55/lib/libVIT_iMX9_CortexA55_v04_09_00.a
+	VIT_LIB = ../vit/platforms/iMX9_CortexA55/lib/libVIT_iMX9_CortexA55_v04_10_00_EngineeringRelease.a
 	VSEEKER = ../voiceseeker/platforms/iMX9_CortexA55
 else
 	BUILD_ARCH = CortexA53
