@@ -87,9 +87,11 @@ namespace SignalProcessor {
 		else if (VIT_Model_Setting == "Italian") {
 			VIT_Model = VIT_Model_it;
 		}
+#if defined CortexA55
 		else if (VIT_Model_Setting == "Portuguese") {
 			VIT_Model = VIT_Model_pt;
 		}
+#endif
 		else {
 			printf("Warning: Unknown VIT model! Using English by default!\n");
 			VIT_Model = VIT_Model_en;
