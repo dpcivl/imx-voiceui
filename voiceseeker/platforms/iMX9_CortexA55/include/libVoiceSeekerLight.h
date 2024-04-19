@@ -67,7 +67,7 @@ typedef struct RETUNE_VOICESEEKER_plugin_s {
 	rdsp_voiceseekerlight_constants_t constants; // (ro)
 	rdsp_voiceseekerlight_config_t config;
 	rdsp_mem_t mem;
-	uint32_t sysdefs_checksum; // (ro) CRC checksum of xml sysdefs entries: name, id, length, used by app/tool to find matching rdsp2 file 
+	uint32_t sysdefs_checksum; // (ro) CRC checksum of xml sysdefs entries: name, id, length, used by app/tool to find matching rdsp2 file
 } RETUNE_VOICESEEKERLIGHT_plugin_t;
 
 /*
@@ -92,7 +92,7 @@ extern RdspStatus VoiceSeekerLight_SetParameterXml(RETUNE_VOICESEEKERLIGHT_plugi
 extern RdspStatus VoiceSeekerLight_Create(RETUNE_VOICESEEKERLIGHT_plugin_t* APluginInit, rdsp_voiceseekerlight_config_t* Aconfig);
 extern void VoiceSeekerLight_Init(RETUNE_VOICESEEKERLIGHT_plugin_t* APluginInit);
 extern RdspStatus VoiceSeekerLight_Process(RETUNE_VOICESEEKERLIGHT_plugin_t* APluginInit, float** Amic_in, float** Aref_in, float** Aout);
-extern void VoiceSeekerLight_TriggerFound(RETUNE_VOICESEEKERLIGHT_plugin_t* APluginInit, uint32_t Atrigger_start_offset_samples);
+extern RdspStatus VoiceSeekerLight_TriggerFound(RETUNE_VOICESEEKERLIGHT_plugin_t* APluginInit, uint32_t Atrigger_start_offset_samples);
 extern int32_t VoiceSeekerLight_GetDoaOutput(RETUNE_VOICESEEKERLIGHT_plugin_t* APluginInit);
 extern void VoiceSeekerLight_Destroy(RETUNE_VOICESEEKERLIGHT_plugin_t* APluginInit);
 
