@@ -16,6 +16,7 @@
 #include "VIT_action_executor.h"
 
 #include "VIT_Model_en.h"
+#if !defined(SPEECH_TO_INTENT)
 #include "VIT_Model_cn.h"
 #include "VIT_Model_tr.h"
 #include "VIT_Model_de.h"
@@ -24,6 +25,7 @@
 #include "VIT_Model_ko.h"
 #include "VIT_Model_fr.h"
 #include "VIT_Model_it.h"
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +101,9 @@ static void display_usage() {
 #if defined(SIE_SINGLE)
 #define VIT_COMMAND_TIME_SPAN 5.0 // in second
 #elif defined(SIE_MULTI)
-#define VIT_COMMAND_TIME_SPAN 10.0 // in second
+#define VIT_COMMAND_TIME_SPAN 8.0 // in second
+#else
+#define VIT_COMMAND_TIME_SPAN 5.0 // in second
 #endif
 #else  // Voice Commands case
 #define VIT_COMMAND_TIME_SPAN 3.0 // in second
@@ -261,6 +265,7 @@ int main(int argc, char *argv[])
       VIT_Model = VIT_Model_en;
       model_size = sizeof(VIT_Model_en);
     }
+#if !defined(SPEECH_TO_INTENT)
     else if (strcasecmp(language, "MANDARIN") == 0)
     {
       VIT_Model = VIT_Model_cn;
@@ -301,6 +306,7 @@ int main(int argc, char *argv[])
       VIT_Model = VIT_Model_it;
       model_size = sizeof(VIT_Model_it);
     }
+#endif
     else {
       ERROR("Language '%s' not supported\n", language);
       return -1;
@@ -337,7 +343,7 @@ int main(int argc, char *argv[])
   INFO("  Number of WakeWords supported : %d \n", Model_Info.NbOfWakeWords);
 #if defined(VOICE_COMMAND)
   INFO("  Number of Commands  supported : %d \n", Model_Info.NbOfVoiceCmds);
-#elif defined(DECCODER_SIE)
+#elif defined(SPEECH_TO_INTENT)
   INFO(" Number of couple intent tag supported : %d \n", Model_Info.NbOfIntentTag);
   INFO(" Number of words supported : %d \n", Model_Info.NbOfWords);
 #endif

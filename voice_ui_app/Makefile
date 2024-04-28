@@ -2,19 +2,16 @@ ifeq ($(BUILD_ARCH),CortexA55)
 	VIT_PATH = ../vit/platforms/iMX9_CortexA55
 	VIT_LIB = ../vit/platforms/iMX9_CortexA55/lib/libVIT_iMX9_CortexA55_v04_10_00_EngineeringRelease.a
 	VSEEKER = ../voiceseeker/platforms/iMX9_CortexA55
-else
-	VSEEKER = ../voiceseeker/platforms/iMX8M_CortexA53
-
-ifeq ($(BUILD_ARCH),CortexA35)
+else ifeq ($(BUILD_ARCH),CortexA35)
 	BUILD_ARCH = CortexA35
 	VIT_PATH = ../vit/platforms/iMX8_CortexA35
-	VIT_LIB = ../vit/platforms/iMX8_CortexA35/lib/libVIT_iMX8_CortexA35_v04_09_00.a
+	VIT_LIB = ../vit/platforms/iMX8_CortexA35/lib/libVIT_iMX8_CortexA35_v04_10_00_EngineeringRelease.a
+	VSEEKER = ../voiceseeker/platforms/iMX8_CortexA35
 else
 	BUILD_ARCH = CortexA53
 	VIT_PATH = ../vit/platforms/iMX8M_CortexA53
-	VIT_LIB = ../vit/platforms/iMX8M_CortexA53/lib/libVIT_iMX8M_CortexA53_v04_09_00.a
-endif
-
+	VIT_LIB = ../vit/platforms/iMX8M_CortexA53/lib/libVIT_iMX8M_CortexA53_v04_10_00_EngineeringRelease.a
+	VSEEKER = ../voiceseeker/platforms/iMX8M_CortexA53
 endif
 
 VSPOT = ../voiceprocessor/

@@ -19,10 +19,7 @@
 #include "VIT_Model_ko.h"
 #include "VIT_Model_fr.h"
 #include "VIT_Model_it.h"
-
-#if defined CortexA55
 #include "VIT_Model_pt.h"
-#endif
 
 #define MODEL_LOCATION              VIT_MODEL_IN_SLOW_MEM
 #define DEVICE_ID                   VIT_IMX8MA53
