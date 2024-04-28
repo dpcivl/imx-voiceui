@@ -9,7 +9,6 @@
  * and that you agree to comply with and are bound by, such license terms.
  * If you do not agree to be bound by the applicable license terms,
  * then you may not retain, install, activate or otherwise use the software.
- *
  */
 #include "RdspMemoryUtilsPublic.h"
 

@@ -1,0 +1,36 @@
+NXP Software Content Register
+
+Release - VoiceSeeker_v0.7.0
+
+Outgoing License: LA_OPT_NXP_Software_License v56 April 2024 - Additional distribution license granted - Section 2.3 applies
+License File:     LICENSE.txt
+
+Release tag: v0.7.0
+
+--------------------------------------------
+
+Package:                    libvoiceseeker.a
+Version:                    0.7.0
+Outgoing License:           LA_OPT_NXP_Software_License v56 April 2024 - Additional distribution license granted - Section 2.3 applies
+License File:               ./LICENSE.txt
+Package Category:           library
+Type of Content:            binary and headers
+Description and comments:   Multi-microphone audio-front-end with acoustic echo cancellation.
+Release Location:           ./include
+                            ./lib/libvoiceseeker_no_aec.a
+Origin:                     NXP (proprietary)
+                            NE10 - https://github.com/projectNe10/Ne10 (BSD-3-Clause)
+
+--------------------------------------------
+
+Package:                    Ne10
+Version:                    1.2.1
+Outgoing License:           BSD 3-Clause
+License File:               ./licenses/BSD-Ne10.txt
+Package Category:           library
+Type of Content:            object code
+Description and comments:   ARM Cortex-A accelerated math.
+Origin:                     https://github.com/projectNe10/Ne10 (BSD-3-Clause)
+
+--------------------------------------------
+

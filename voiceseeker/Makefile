@@ -2,6 +2,8 @@ VERSION = 2.0
 
 ifeq ($(BUILD_ARCH),CortexA55)
 	VS_PATH = ./platforms/iMX9_CortexA55
+else ifeq ($(BUILD_ARCH),CortexA35)
+	VS_PATH = ./platforms/iMX8_CortexA35
 else
 	BUILD_ARCH = CortexA53
 	VS_PATH = ./platforms/iMX8M_CortexA53

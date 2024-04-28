@@ -1,0 +1,13 @@
+
+----------------------------------------------------------------------
+REL 0.7.0 - LA_OPT_NXP_Software_License
+----------------------------------------------------------------------
+Voiceseeker integrating Beamformer and DOA features.
+Core supported : Cortex-A53
+Platform supported : i.MX8MPlus, i.MX8MMini, i.MX8MNano
+
+New features :
+
+    
+Main changes :
+    - Fix in DOA

@@ -43,7 +43,7 @@
 #endif
 
 #ifdef _WIN32
-#define RDSP_PRAGMA_USED 
+#define RDSP_PRAGMA_USED
 #else
 #define RDSP_PRAGMA_USED __attribute__((used))
 #endif
