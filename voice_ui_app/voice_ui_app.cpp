@@ -7,6 +7,7 @@
 #include <AudioStream.h>
 #include <dlfcn.h>
 
+#include "AFEConfigState.h"
 #include "RdspAppUtilities.h"
 #include "VoiceProcessorImplementation.h"
 #include "SignalProcessor_VIT.h"
@@ -209,6 +210,7 @@ int main(int argc, char *argv[]) {
 	mqd_t mqIter;
 	mqd_t mqTrigg;
 	mqd_t mqOffset;
+	bool use_voicespot;
 
 	initQueue(&seekeroutput, 0, queue_size);
 
@@ -224,36 +226,54 @@ int main(int argc, char *argv[]) {
 	RdspBuffer_Create(&vit_frame_buf, 1, sizeof(int16_t), 6 * VOICESEEKER_OUT_NHOP);
 	vit_frame_buf.assume_full = 0;
 
-	SignalProcessor_VIT VIT{};
-	VITHandle = VIT.VIT_open_model();
-	VIT.VIT_Handle = VITHandle;
+	AFEConfig::AFEConfigState configState;
+	std::string WakeWordEngine = configState.isConfigurationEnable("WakeWordEngine", "VoiceSpot");
 
-	if (!VIT.isVITWakeWordEnable()) {
+	if (WakeWordEngine == "VoiceSpot")
+		use_voicespot = true;
+	else
+		use_voicespot = false;
+
+	if (use_voicespot) {
 		library = dlopen(libraryName.c_str(), RTLD_NOW);
 		message = dlerror();
 		if (nullptr != message) {
 			std::cout << "Opening library failed: " << message << std::endl;
-			exit(1);
+			use_voicespot = false;
+			goto start_detect;
 		}
 
 		createFce = (void * (*)())dlsym(library, "createProcessor");
 		message = dlerror();
 		if (nullptr != message) {
 			std::cout << "createProcessor load: " << message << std::endl;
-			exit(1);
+			use_voicespot = false;
+			dlclose(library);
+			goto start_detect;
 		}
 		destroyFce = (void *(*)(SignalProcessor::VoiceProcessorImplementation * impl))dlsym(library, "destroyProcessor");
 		message = dlerror();
 		if (nullptr != message) {
 			std::cout << "destroyProcessor load: " << message << std::endl;
-			exit(1);
+			use_voicespot = false;
+			dlclose(library);
+			goto start_detect;
 		}
 
 		impl = (SignalProcessor::VoiceProcessorImplementation *) createFce();
 		if (impl == NULL) {
-			exit(1);
+			use_voicespot = false;
+			destroyFce(impl);
+			dlclose(library);
+			goto start_detect;
 		}
 	}
+
+start_detect:
+
+	SignalProcessor_VIT VIT{};
+	VITHandle = VIT.VIT_open_model(!use_voicespot);
+	VIT.VIT_Handle = VITHandle;
 
 	//initialize the queue attributes
 	attr.mq_flags = 0;
@@ -328,11 +348,7 @@ int main(int argc, char *argv[]) {
 		}
 
 		keyword_start_offset_samples = 0;
-		if (VIT.isVITWakeWordEnable()) {
-			if (VIT.isVoiceSpotEnable()) {
-				std::cout << "Disable voicespot if using VIT wakeword detection" << std::endl;
-				break;
-			}
+		if (!use_voicespot) {
 			bool VIT_Result = VoiceSpotToVITProcess(VIT, buffer,
 								&vit_frame_buf, vit_frame_size,
 								&keyword_start_offset_samples,
@@ -365,7 +381,7 @@ int main(int argc, char *argv[]) {
 	mq_close(mqTrigg);
 	mq_close(mqOffset);
 
-	if (!VIT.isVITWakeWordEnable())	{
+	if (use_voicespot){
 		impl->closeProcessor();
 		destroyFce(impl);
 		dlclose(library);

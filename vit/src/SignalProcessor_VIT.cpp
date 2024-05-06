@@ -14,14 +14,11 @@ namespace SignalProcessor {
 	//Constructor
 	SignalProcessor_VIT::SignalProcessor_VIT() {
 
-		/* Using VoiceSpot to detect wakeword as default */
-		this->VoiceSpotEnable = true;
-		this->VITWakeWordEnable = false;
 		this->last_notification = 0;
 		this->WWId = 0;
 	}
 
-	VIT_Handle_t SignalProcessor_VIT::VIT_open_model() {
+	VIT_Handle_t SignalProcessor_VIT::VIT_open_model(bool VITWakeWordEnable) {
 		VIT_ReturnStatus_en       Status;                                   // Status of the function
 		VIT_Handle_t              VITHandle = PL_NULL;                      // VIT handle pointer
 
@@ -35,27 +32,7 @@ namespace SignalProcessor {
 		const PL_UINT8            *VIT_Model = VIT_Model_en;
 
 		AFEConfig::AFEConfigState configState;
-		std::string WakeWordEngine = configState.isConfigurationEnable("WakeWordEngine", "VoiceSpot");
 		std::string VIT_Model_Setting = configState.isConfigurationEnable("VITLanguage", "English");
-
-		if (WakeWordEngine == "VoiceSpot") {
-			this->VoiceSpotEnable = true;
-			this->VITWakeWordEnable = false;
-		}
-		else if (WakeWordEngine == "VIT") {
-			this->VoiceSpotEnable = false;
-			this->VITWakeWordEnable = true;
-		}
-		else {
-			printf("Warning: Unknown wake word detection engine, Using VoiceSpot by default!\n");
-			this->VoiceSpotEnable = true;
-			this->VITWakeWordEnable = false;
-		}
-
-		if (this->VoiceSpotEnable && this->VITWakeWordEnable) {
-			printf("VIT Configuration error: VoiceSpot and VIT WakeWord detection can't work together!\n");
-			exit(-1);
-		}
 
 		/*
 		 *   VIT Set Model : register the Model in VIT
@@ -250,7 +227,7 @@ namespace SignalProcessor {
 		*   Set and Apply VIT control parameters
 		*/
 		VITControlParams.OperatingMode = VIT_OPERATING_MODE;
-		if (this->VITWakeWordEnable && !this->VoiceSpotEnable) {
+		if (VITWakeWordEnable) {
 			printf("Using VIT for wakeword detection.\n");
 			VITControlParams.OperatingMode = (VIT_OperatingMode_en)(VIT_WAKEWORD_ENABLE | VIT_VOICECMD_ENABLE);
 		}
@@ -374,13 +351,5 @@ namespace SignalProcessor {
 		}
 
 		return false;
-	}
-
-	bool SignalProcessor_VIT::isVoiceSpotEnable() {
-		return this->VoiceSpotEnable;
-	}
-
-	bool SignalProcessor_VIT::isVITWakeWordEnable() {
-		return this->VITWakeWordEnable;
 	}
 }
