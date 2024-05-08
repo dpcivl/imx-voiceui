@@ -1,6 +1,6 @@
 
 ----------------------------------------------------------------------
-REL 04.10.00 - LA_OPT_NXP_Software_License
+REL 04.10.01 - LA_OPT_NXP_Software_License
 ----------------------------------------------------------------------
 VIT integrating LP_VAD, WakeWordEngine Text2Model and Voice Commands Text2Model features.
 Core supported : Cortex-A53
@@ -27,7 +27,7 @@ New features :
     - Portuguese support
     
 Main changes :
-    - VIT_v4.10.0 lib not backward compatible with previous model versions
+    - VIT_v4.10.1 lib not backward compatible with previous model versions
 
 
 Notes : VIT lib is supporting 1 MIC only

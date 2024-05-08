@@ -1,8 +1,8 @@
 NXP Software Content Register
 
-Release Name : VIT_v4.10.0 - Enginering release
+Release Name : VIT_v4.10.1 - Enginering release
 Description: Cortex-A55 Voice Intelligent Technology library : VIT Wakeword and Voice Command
-Version: 4.10.0
+Version: 4.10.1
 
 #### VIT package #######
 Outgoing License : LA_OPT_NXP_Software_License v56 April 2024 - Additional distribution license granted - Section 2.3 applies
