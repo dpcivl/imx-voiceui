@@ -17,6 +17,7 @@ NE10_DIR = ../utils/ne10
 RDSP_DIR = ../utils/rdsp_common_utils
 AFE_DIR = ../utils/afe_config
 AST_DIR = ../utils/audiostream
+MQTT_DIR = ../utils/mosquitto
 
 VS_DIR1 = $(VSPOT)/lib/include
 VIT_DIR1 = ../vit/src
@@ -27,11 +28,12 @@ INC_DIR3 = $(VSEEKER)/rdsp_utilities_public/rdsp_memory_utils_public
 
 CPPFLAGS += -O3 -DNDEBUG -DRDSP_DISABLE_FILEIO -Wno-format-security
 LIBRARY = 	$(VSPOT)/lib/libvoicespot.a  \
-			$(VIT_LIB) $(NE10_DIR)/lib/libNE10.a
+			$(VIT_LIB) $(NE10_DIR)/lib/libNE10.a	\
+			/opt/fsl-imx-wayland/6.1-mickledore/sysroots/armv8a-poky-linux/usr/lib/libmosquitto.so		\
 
 INCLUDES = $(addprefix -I, ./src $(VS_DIR1) 		\
 		$(VIT_PATH)/lib $(VIT_PATH)/lib/inc 		\
-		$(AFE_DIR) $(NE10_DIR)/include				\
+		$(AFE_DIR) $(NE10_DIR)/include $(MQTT_DIR)	\
 		$(RDSP_DIR)/src $(AST_DIR) $(VIT_DIR1)		\
 		$(INC_DIR1) $(INC_DIR2) $(INC_DIR3))
 
@@ -46,6 +48,8 @@ SRCS = 	./voice_ui_app.cpp							\
 		$(AST_DIR)/AudioStream.cpp					\
 		$(AST_DIR)/AudioStreamBase.cpp				\
 		$(AST_DIR)/AudioStreamException.cpp			\
+		$(MQTT_DIR)/mqtt_client.cpp					\
+		$(MQTT_DIR)/mqtt_publisher.cpp
 
 vpath %.cpp $(dir $(SRCS))
 vpath %.c $(dir $(SRCS))

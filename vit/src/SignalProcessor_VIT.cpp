@@ -12,7 +12,9 @@
 namespace SignalProcessor {
 
 	//Constructor
-	SignalProcessor_VIT::SignalProcessor_VIT() {
+	SignalProcessor_VIT::SignalProcessor_VIT()
+		: mqttClient("localhost", 1883), dataPublisher(mqttClient)
+	{
 
 		/* Using VoiceSpot to detect wakeword as default */
 		this->VoiceSpotEnable = true;

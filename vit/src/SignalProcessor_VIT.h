@@ -20,6 +20,9 @@
 #include "VIT_Model_fr.h"
 #include "VIT_Model_it.h"
 
+#include "mqtt_client.h"
+#include "mqtt_publisher.h"
+
 #define MODEL_LOCATION              VIT_MODEL_IN_SLOW_MEM
 #define DEVICE_ID                   VIT_IMX8MA53
 #define VIT_OPERATING_MODE          VIT_VOICECMD_ENABLE	// Enabling Voice Commands only
@@ -45,6 +48,8 @@ namespace SignalProcessor {
 		bool VIT_Process_Phase(VIT_Handle_t VITHandle, int16_t* frame_data, int16_t* pCmdId, int *start_offset, bool notify, int32_t iteration);
 		bool isVoiceSpotEnable();
 		bool isVITWakeWordEnable();
+		MQTTClient mqttClient;      // MQTTClient 멤버 변수
+    	DataPublisher dataPublisher; // DataPublisher 멤버 변수
 	};
 
 }
