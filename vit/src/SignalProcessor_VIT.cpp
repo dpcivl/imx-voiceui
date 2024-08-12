@@ -332,6 +332,15 @@ namespace SignalProcessor {
 					SignalProcessor_notifyTrigger(notified, command, iteration, last_notification);
 				}
 				printf(" - Wakeword detected %d", wakeWord.Id);
+				switch(wakeWord.Id) {
+					case 1:
+					dataPublisher.checkAndPublish(WW, 1);
+
+					case 2:
+					case 3:
+					dataPublisher.checkAndPublish(WW, 2);
+				}
+
 				// Retrieve WW Name: OPTIONAL
 				// Check first if WW string is present
 				if (wakeWord.pName != PL_NULL)
@@ -361,6 +370,13 @@ namespace SignalProcessor {
 				}
 				printf(" - Voice Command detected %d", VoiceCommand.Id);
 				*pCmdId = VoiceCommand.Id;
+
+				switch(VoiceCommand.Id) {
+					case 1:
+					dataPublisher.checkAndPublish(VC, 1);	// 음소거
+					case 2:
+					dataPublisher.checkAndPublish(VC, 2);	// 다시듣기
+				}
 
 				// Retrieve CMD Name : OPTIONAL
 				// Check first if CMD string is present
